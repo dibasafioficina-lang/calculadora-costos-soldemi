@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Cargá el inventario en Excel y obtené el PDV con descuento, la utilidad y la comparación contra el costo de la competencia.">
+<title>Calculadora de Costos Soldemi</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AE%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+
+<style>
+  :root{
+    color-scheme:light;
+    --paper:#F1F3F2;
+    --surface:#FFFFFF;
+    --surface-2:#F7F9F8;
+    --ink:#14191C;
+    --muted:#5D6A6E;
+    --faint:#889498;
+    --line:#D7DEDC;
+    --line-strong:#B9C4C1;
+    --accent:#0D5C63;
+    --accent-soft:#E2EFEF;
+    --pos:#2E7148;
+    --pos-soft:#E4F0E8;
+    --warn:#8F6410;
+    --warn-soft:#F6EEDC;
+    --crit:#A93A2B;
+    --crit-soft:#F7E6E2;
+    --comp:#584A8C;
+    --comp-soft:#ECE9F6;
+    --shadow:0 1px 2px rgba(20,25,28,.06), 0 8px 24px -16px rgba(20,25,28,.25);
+    --radius:6px;
+    --f-display:"Archivo","Segoe UI",system-ui,sans-serif;
+    --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+    --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --paper:#0E1416;
+      --surface:#151D20;
+      --surface-2:#1A2427;
+      --ink:#E5EBE9;
+      --muted:#94A3A5;
+      --faint:#6D7C80;
+      --line:#263134;
+      --line-strong:#37474B;
+      --accent:#57B6BC;
+      --accent-soft:#14292C;
+      --pos:#63C08D;
+      --pos-soft:#132B20;
+      --warn:#D7A648;
+      --warn-soft:#2C2415;
+      --crit:#E67964;
+      --crit-soft:#301A17;
+      --comp:#A695DD;
+      --comp-soft:#1F1B30;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --paper:#0E1416;
+    --surface:#151D20;
+    --surface-2:#1A2427;
+    --ink:#E5EBE9;
+    --muted:#94A3A5;
+    --faint:#6D7C80;
+    --line:#263134;
+    --line-strong:#37474B;
+    --accent:#57B6BC;
+    --accent-soft:#14292C;
+    --pos:#63C08D;
+    --pos-soft:#132B20;
+    --warn:#D7A648;
+    --warn-soft:#2C2415;
+    --crit:#E67964;
+    --crit-soft:#301A17;
+    --comp:#A695DD;
+    --comp-soft:#1F1B30;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--f-body);
+    font-size:15px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    max-width:1500px;
+    margin:0 auto;
+    padding:22px 20px 64px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:18px;
+    padding-bottom:16px;
+    border-bottom:2px solid var(--ink);
+  }
+  .brand{display:flex;align-items:center;gap:13px;min-width:0}
+  .mark{
+    flex:0 0 auto;
+    width:42px;height:42px;
+    display:grid;place-items:center;
+    border:1.5px solid var(--accent);
+    border-radius:50%;
+    color:var(--accent);
+    font-family:var(--f-display);
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:-.02em;
+  }
+  h1{
+    margin:0;
+    font-family:var(--f-display);
+    font-weight:700;
+    font-size:clamp(22px,2.6vw,29px);
+    letter-spacing:-.022em;
+    line-height:1.1;
+    text-wrap:balance;
+  }
+  .tagline{
+    margin:3px 0 0;
+    color:var(--muted);
+    font-size:13.5px;
+  }
+  .eyebrow{
+    font-family:var(--f-mono);
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+
+  /* ---------- loader ---------- */
+  .intake{
+    display:flex;
+    align-items:stretch;
+    gap:10px;
+    flex:0 1 620px;
+    min-width:300px;
+    flex-wrap:wrap;
+  }
+  .calcbox{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:11px 13px;
+  }
+  .calcbox .field label{margin-bottom:2px;display:block}
+  .calcbox input[type="number"]{width:78px;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+  .btn-calc{align-self:stretch;padding-left:18px;padding-right:18px}
+  .btn-calc.is-pending::after{content:" •";font-size:16px;line-height:0}
+  .btn-calc.is-pending{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent)}
+  .loader{
+    flex:1 1 330px;
+    min-width:260px;
+    background:var(--surface);
+    border:1.5px dashed var(--line-strong);
+    border-radius:var(--radius);
+    padding:13px 15px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+    transition:border-color .15s, background .15s;
+  }
+  .loader.is-over{border-color:var(--accent);background:var(--accent-soft)}
+  .loader.is-loaded{border-style:solid;border-color:var(--line)}
+  .loader-body{min-width:0;flex:1}
+  .loader-title{font-weight:600;font-size:14px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .loader-note{color:var(--muted);font-size:12.5px;display:block;margin-top:1px}
+  .loader-icon{
+    flex:0 0 auto;width:34px;height:34px;display:grid;place-items:center;
+    border-radius:4px;background:var(--accent-soft);color:var(--accent);
+  }
+  .loader-icon svg{width:18px;height:18px}
+
+  button,.btn{font:inherit}
+  .btn{
+    appearance:none;
+    border:1px solid var(--line-strong);
+    background:var(--surface);
+    color:var(--ink);
+    padding:7px 13px;
+    border-radius:5px;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .12s,border-color .12s;
+  }
+  .btn:hover{background:var(--surface-2);border-color:var(--accent)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  :root[data-theme="dark"] .btn-primary,
+  :root:not([data-theme="light"]) .btn-primary{color:#0B1416}
+  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .btn-primary{color:#fff}}
+  .btn-primary:hover{filter:brightness(1.08);background:var(--accent)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-sm{padding:5px 10px;font-size:12.5px}
+
+  /* ---------- stats ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .stat{background:var(--surface);padding:12px 15px;display:flex;flex-direction:column;gap:2px}
+  .stat-label{
+    font-family:var(--f-mono);font-size:10px;font-weight:500;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  }
+  .stat-value{
+    font-family:var(--f-display);font-weight:600;font-size:23px;
+    letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15;
+  }
+  .stat-sub{font-size:12px;color:var(--muted)}
+  .stat.is-crit .stat-value{color:var(--crit)}
+  .stat.is-comp .stat-value{color:var(--comp)}
+
+  /* ---------- controls ---------- */
+  .controls{
+    display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:13px 15px;
+  }
+  .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .field label{
+    font-family:var(--f-mono);font-size:10px;font-weight:500;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  }
+  input[type="search"],input[type="number"],select{
+    font:inherit;font-size:14px;color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--line-strong);border-radius:5px;padding:6px 9px;
+  }
+  input[type="search"]{width:265px;max-width:100%}
+  select{max-width:230px}
+  .field-narrow input{width:86px;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+  .seg{display:flex;border:1px solid var(--line-strong);border-radius:5px;overflow:hidden}
+  .seg button{
+    appearance:none;border:0;border-right:1px solid var(--line-strong);
+    background:var(--surface-2);color:var(--muted);
+    padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .seg button:last-child{border-right:0}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  :root[data-theme="dark"] .seg button[aria-pressed="true"],
+  :root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0B1416}
+  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .seg button[aria-pressed="true"]{color:#fff}}
+  .controls-spacer{flex:1 1 auto}
+  .controls-actions{display:flex;gap:8px;align-items:flex-end}
+
+  /* ---------- table ---------- */
+  .sheet{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .sheet-head{
+    display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;
+    gap:10px;padding:11px 15px;border-bottom:1px solid var(--line);
+    background:var(--surface-2);
+  }
+  .sheet-title{font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:-.01em}
+  .sheet-count{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .tablewrap{overflow-x:auto;max-height:min(72vh,860px);overflow-y:auto}
+  table{border-collapse:separate;border-spacing:0;width:100%;min-width:1180px}
+  thead th{
+    position:sticky;top:0;z-index:2;
+    background:var(--surface);
+    border-bottom:1.5px solid var(--line-strong);
+    padding:0;
+    text-align:left;
+    font-weight:600;
+  }
+  thead th .th-btn{
+    width:100%;appearance:none;border:0;background:none;color:var(--muted);
+    font-family:var(--f-mono);font-size:10px;font-weight:600;letter-spacing:.08em;
+    text-transform:uppercase;padding:10px 11px;cursor:pointer;text-align:inherit;
+    display:flex;align-items:center;gap:5px;line-height:1.3;
+  }
+  thead th.num .th-btn{justify-content:flex-end}
+  thead th .th-btn:hover{color:var(--accent)}
+  thead th[aria-sort] .th-btn{color:var(--ink)}
+  .sort-ind{font-size:9px;opacity:.55}
+  thead th.grp-calc{background:var(--accent-soft)}
+  thead th.grp-comp{background:var(--comp-soft)}
+  tbody td{
+    padding:7px 11px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+    font-size:13.5px;
+  }
+  tbody tr:hover td{background:var(--surface-2)}
+  td.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.code{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+  td.nombre{min-width:250px;max-width:330px}
+  td.marca{color:var(--muted);font-size:12.5px;max-width:150px}
+  td.calc{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+  tbody tr:hover td.calc{background:var(--accent-soft)}
+  td.comp{background:color-mix(in srgb,var(--comp-soft) 50%,transparent)}
+  tbody tr:hover td.comp{background:var(--comp-soft)}
+  .pos{color:var(--pos)}
+  .neg{color:var(--crit)}
+  .zero{color:var(--faint)}
+  tr.flag-crit td:first-child{box-shadow:inset 3px 0 0 var(--crit)}
+  tr.flag-warn td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
+  .chip{
+    display:inline-block;font-family:var(--f-mono);font-size:9.5px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:3px;
+    margin-top:3px;
+  }
+  .chip-crit{background:var(--crit-soft);color:var(--crit)}
+  .chip-warn{background:var(--warn-soft);color:var(--warn)}
+  .comp-input{
+    width:100%;min-width:86px;font-family:var(--f-mono);font-size:13px;
+    font-variant-numeric:tabular-nums;text-align:right;
+    background:var(--surface);border:1px solid var(--line-strong);
+    border-radius:4px;padding:3px 6px;color:var(--ink);
+  }
+  .comp-input:focus{border-color:var(--comp);outline:2px solid color-mix(in srgb,var(--comp) 35%,transparent);outline-offset:0}
+  .comp-input::-webkit-outer-spin-button,.comp-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .comp-input[type=number]{-moz-appearance:textfield}
+  .sheet-foot{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+    gap:10px;padding:11px 15px;border-top:1px solid var(--line);background:var(--surface-2);
+  }
+  .empty{padding:44px 20px;text-align:center;color:var(--muted)}
+  .empty strong{display:block;color:var(--ink);font-family:var(--f-display);font-size:16px;margin-bottom:4px}
+
+  /* ---------- notes ---------- */
+  .notes{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:14px 26px;padding:16px 0 0;border-top:1px solid var(--line);
+  }
+  .note h3{
+    margin:0 0 5px;font-family:var(--f-mono);font-size:10px;font-weight:600;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--faint);
+  }
+  .note p{margin:0 0 5px;font-size:13px;color:var(--muted);line-height:1.5}
+  .note code{
+    font-family:var(--f-mono);font-size:12px;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:3px;padding:1px 4px;color:var(--ink);
+  }
+  .banner{
+    font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:0 0 auto}
+  .dot.on{background:var(--pos)}
+  .dot.off{background:var(--warn)}
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:5px;
+    font-size:13.5px;font-weight:600;box-shadow:var(--shadow);z-index:50;
+    max-width:min(88vw,520px);text-align:center;
+  }
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  @media (max-width:720px){
+    .page{padding:16px 12px 48px}
+    .masthead{align-items:flex-start}
+    .loader{flex-basis:100%}
+    input[type="search"]{width:100%}
+    .field{flex:1 1 150px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">S</span>
+      <div>
+        <span class="eyebrow">Soldemi &middot; Lista de precios</span>
+        <h1>Calculadora de Costos Soldemi</h1>
+        <p class="tagline">Cargá el inventario y obtené el PDV con descuento, la utilidad y la comparación contra la competencia.</p>
+      </div>
+    </div>
+
+    <div class="intake">
+      <label class="loader" id="loader">
+        <span class="loader-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6"></path><path d="M9 13l6 5"></path><path d="M15 13l-6 5"></path>
+          </svg>
+        </span>
+        <span class="loader-body">
+          <span class="loader-title" id="loaderTitle">Cargar inventario (.xlsx)</span>
+          <span class="loader-note" id="loaderNote">Arrastrá el archivo acá o hacé clic para buscarlo</span>
+        </span>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="visually-hidden">
+      </label>
+      <div class="calcbox">
+        <div class="field">
+          <label for="desc">% Descuento</label>
+          <input type="number" id="desc" value="30" min="0" max="100" step="1">
+        </div>
+        <button class="btn btn-primary btn-calc" id="calcular" type="button">Calcular</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats" id="stats" aria-label="Resumen"></section>
+
+  <section class="controls" aria-label="Filtros y parámetros">
+    <div class="field">
+      <label for="q">Buscar</label>
+      <input type="search" id="q" placeholder="Nombre, marca o item number" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="marca">Marca</label>
+      <select id="marca"><option value="">Todas las marcas</option></select>
+    </div>
+    <div class="field">
+      <label id="verLbl">Ver</label>
+      <div class="seg" role="group" aria-labelledby="verLbl" id="seg">
+        <button type="button" data-view="todos" aria-pressed="true">Todos</button>
+        <button type="button" data-view="stock" aria-pressed="false">Con stock</button>
+        <button type="button" data-view="comparados" aria-pressed="false">Comparados</button>
+        <button type="button" data-view="alertas" aria-pressed="false">Alertas</button>
+      </div>
+    </div>
+    <div class="controls-spacer"></div>
+    <div class="controls-actions">
+      <button class="btn btn-sm" id="clearComp" type="button">Borrar competencia</button>
+      <button class="btn btn-primary" id="export" type="button">Exportar a Excel</button>
+    </div>
+  </section>
+
+  <section class="sheet" aria-label="Listado de productos">
+    <div class="sheet-head">
+      <span class="sheet-title" id="sheetTitle">Listado</span>
+      <span class="sheet-count" id="sheetCount"></span>
+    </div>
+    <div class="tablewrap" id="tablewrap">
+      <table>
+        <thead>
+          <tr id="headRow"></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="sheet-foot">
+      <span class="banner"><span class="dot off" id="syncDot"></span><span id="syncText">Nada se guarda: al cerrar la página se pierden los costos de competencia. Exportá a Excel para conservarlos.</span></span>
+      <button class="btn btn-sm" id="more" type="button" hidden>Mostrar más</button>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="note">
+      <h3>Cómo se calcula</h3>
+      <p><code>PDV con desc</code> = Precio Base × (1 − % desc)</p>
+      <p><code>Ganancia</code> = PDV con desc − Costo Prom. Nac.</p>
+      <p><code>% utilidad</code> = Ganancia ÷ PDV con desc</p>
+      <p><code>Dif. vs PDV</code> = Costo competencia − PDV con desc</p>
+    </div>
+    <div class="note">
+      <h3>Lectura de la diferencia</h3>
+      <p><span class="pos">En verde</span>: la competencia está por encima de tu PDV — tenés el precio más bajo.</p>
+      <p><span class="neg">En rojo</span>: la competencia está por debajo — tu PDV queda caro frente a ella.</p>
+    </div>
+    <div class="note">
+      <h3>Alertas del inventario</h3>
+      <p>Barra roja: costo en cero o negativo, o la ganancia queda por debajo de cero.</p>
+      <p>Barra ámbar: el producto no tiene precio base cargado o está sin stock.</p>
+    </div>
+    <div class="note">
+      <h3>Columnas del archivo</h3>
+      <p>Se leen <code>Item Number</code>, <code>Nombre</code>, <code>Marca</code>, <code>InStock</code>, <code>Costo Prom. Nac.</code> y <code>Precio Base</code>. Si el encabezado cambia, se toman las columnas B, D, E, G, J y K.</p>
+    </div>
+  </section>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ============ estado ============ */
+  var CHUNK = 120;
+  var rows = [];            // {item, nombre, marca, stock, costo, precio}
+  var comp = {};            // item -> costo competencia
+  var isDemo = true;
+  var appliedDesc = 30;
+  var view = "todos";
+  var sortKey = "nombre";
+  var sortDir = 1;
+  var shown = CHUNK;
+  var fileLabel = "Datos de ejemplo";
+
+  /* ============ datos de ejemplo (se reemplazan al cargar el Excel) ============ */
+  var DEMO = [
+    ["7501000640201","JARABE EXPECTORANTE 120 ML","VITAFARMA",24,2.4150,4.35],
+    ["7441000112034","CREMA HIDRATANTE CORPORAL 400 ML","DERMALIS",8,5.8700,9.90],
+    ["7501000998123","ANALGESICO 500 MG CAJA 20 TAB","NOVAMED",156,1.1275,2.10],
+    ["7441000445019","PROTECTOR SOLAR FPS 50 90 ML","SOLARIS",3,9.4400,17.85],
+    ["7501000330117","SUERO ORAL SABOR NARANJA 500 ML","HIDRAPLUS",412,0.6180,1.15],
+    ["7441000778902","VITAMINA C 1000 MG 30 TAB","NATUVIDA",0,4.0250,7.20],
+    ["7501000221456","GOTAS OFTALMICAS LUBRICANTES 5 ML","OFTALAB",11,12.6500,17.40],
+    ["7441000559330","GEL ANTIBACTERIAL 250 ML","PUREZA",67,1.3067,2.30],
+    ["7501000887744","PASTA DENTAL BLANQUEADORA 100 ML","DENTIFRESH",29,1.8800,3.25],
+    ["7441000103228","MULTIVITAMINICO INFANTIL 120 ML","NATUVIDA",5,6.3400,0.00]
+  ].map(function(r){
+    return {item:r[0],nombre:r[1],marca:r[2],stock:r[3],costo:r[4],precio:r[5]};
+  });
+
+  /* ============ utilidades ============ */
+  var $ = function(id){ return document.getElementById(id); };
+  var NF2 = new Intl.NumberFormat("es-PA",{minimumFractionDigits:2,maximumFractionDigits:2});
+  var NF4 = new Intl.NumberFormat("es-PA",{minimumFractionDigits:2,maximumFractionDigits:4});
+  var NF0 = new Intl.NumberFormat("es-PA",{maximumFractionDigits:0});
+
+  function money(v){ return (v === null || v === undefined || !isFinite(v)) ? "—" : NF2.format(v); }
+  function money4(v){ return (v === null || v === undefined || !isFinite(v)) ? "—" : NF4.format(v); }
+  function esc(s){
+    return String(s === null || s === undefined ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function norm(s){
+    return String(s === null || s === undefined ? "" : s)
+      .normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
+  }
+  function numOf(v){
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    if (v === null || v === undefined || v === "") return 0;
+    var s = String(v).replace(/[^0-9,.\-]/g,"");
+    if (s.indexOf(",") > -1 && s.indexOf(".") > -1) s = s.replace(/\./g,"").replace(",",".");
+    else if (s.indexOf(",") > -1) s = s.replace(",",".");
+    var n = parseFloat(s);
+    return isFinite(n) ? n : 0;
+  }
+  function toast(msg){
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.setAttribute("role","status");
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); }, 3600);
+  }
+
+  /* ============ cálculo ============ */
+  function inputDesc(){
+    var v = numOf($("desc").value);
+    if (!isFinite(v)) v = 0;
+    return Math.min(100, Math.max(0, v));
+  }
+  function pctDesc(){ return appliedDesc; }
+  function calc(r){
+    var d = pctDesc() / 100;
+    var pdv = r.precio * (1 - d);
+    var gan = pdv - r.costo;                     // utilidad = PDV con desc − costo
+    var util = (pdv > 0) ? (gan / pdv) * 100 : null;
+    var cc = comp[r.item];
+    var dif = (typeof cc === "number") ? cc - pdv : null;
+    return {pdv:pdv, gan:gan, util:util, cc:(typeof cc === "number" ? cc : null), dif:dif};
+  }
+  function flagOf(r, c){
+    if (r.costo <= 0 || c.gan < 0) return "crit";
+    if (r.precio <= 0 || r.stock <= 0) return "warn";
+    return "";
+  }
+
+  /* ============ filtros y orden ============ */
+  function filtered(){
+    var q = norm($("q").value);
+    var m = $("marca").value;
+    var out = [];
+    for (var i = 0; i < rows.length; i++){
+      var r = rows[i];
+      if (m && r.marca !== m) continue;
+      if (q && norm(r.nombre).indexOf(q) < 0 && norm(r.marca).indexOf(q) < 0 && String(r.item).indexOf(q) < 0) continue;
+      var c = calc(r);
+      if (view === "stock" && !(r.stock > 0)) continue;
+      if (view === "comparados" && c.cc === null) continue;
+      if (view === "alertas" && !flagOf(r, c)) continue;
+      out.push({r:r, c:c});
+    }
+    var key = sortKey, dir = sortDir;
+    out.sort(function(a, b){
+      var va = pick(a, key), vb = pick(b, key);
+      if (va === null) return 1;
+      if (vb === null) return -1;
+      if (typeof va === "string") return va.localeCompare(vb, "es") * dir;
+      return (va - vb) * dir;
+    });
+    return out;
+  }
+  function pick(o, key){
+    switch (key){
+      case "item": return String(o.r.item);
+      case "nombre": return o.r.nombre;
+      case "marca": return o.r.marca;
+      case "stock": return o.r.stock;
+      case "costo": return o.r.costo;
+      case "precio": return o.r.precio;
+      case "pdv": return o.c.pdv;
+      case "gan": return o.c.gan;
+      case "util": return o.c.util;
+      case "cc": return o.c.cc;
+      case "dif": return o.c.dif;
+    }
+    return null;
+  }
+
+  /* ============ render ============ */
+  var COLS = [
+    {k:"item",   t:"Item Number", cls:"code",   grp:""},
+    {k:"nombre", t:"Nombre",      cls:"nombre", grp:""},
+    {k:"marca",  t:"Marca",       cls:"marca",  grp:""},
+    {k:"stock",  t:"InStock",     cls:"num",    grp:"", num:true},
+    {k:"costo",  t:"Costo Prom. Nac.", cls:"num", grp:"", num:true},
+    {k:"precio", t:"Precio Base", cls:"num",    grp:"", num:true},
+    {k:"pdv",    t:"PDV c/desc",  cls:"num calc", grp:"grp-calc", num:true},
+    {k:"gan",    t:"Ganancia",    cls:"num calc", grp:"grp-calc", num:true},
+    {k:"util",   t:"% Utilidad",  cls:"num calc", grp:"grp-calc", num:true},
+    {k:"cc",     t:"Costo competencia", cls:"num comp", grp:"grp-comp", num:true},
+    {k:"dif",    t:"Dif. vs PDV", cls:"num comp", grp:"grp-comp", num:true}
+  ];
+
+  function renderHead(){
+    var d = pctDesc();
+    var html = "";
+    for (var i = 0; i < COLS.length; i++){
+      var c = COLS[i];
+      var label = c.k === "pdv" ? ("PDV con " + d + "% desc") : c.t;
+      var sorted = (sortKey === c.k);
+      var ind = sorted ? (sortDir === 1 ? "▲" : "▼") : "";
+      html += '<th class="' + (c.num ? "num " : "") + c.grp + '"' +
+              (sorted ? ' aria-sort="' + (sortDir === 1 ? "ascending" : "descending") + '"' : "") + '>' +
+              '<button class="th-btn" type="button" data-sort="' + c.k + '">' + esc(label) +
+              '<span class="sort-ind" aria-hidden="true">' + ind + '</span></button></th>';
+    }
+    $("headRow").innerHTML = html;
+  }
+
+  function renderBody(){
+    var list = filtered();
+    var total = list.length;
+    var slice = list.slice(0, shown);
+    var html = "";
+
+    for (var i = 0; i < slice.length; i++){
+      var r = slice[i].r, c = slice[i].c;
+      var flag = flagOf(r, c);
+      var chip = "";
+      if (r.costo <= 0) chip = '<span class="chip chip-crit">sin costo</span>';
+      else if (c.gan < 0) chip = '<span class="chip chip-crit">margen negativo</span>';
+      else if (r.precio <= 0) chip = '<span class="chip chip-warn">sin precio</span>';
+      else if (r.stock <= 0) chip = '<span class="chip chip-warn">sin stock</span>';
+
+      var utilCls = (c.util === null) ? "zero" : (c.util < 0 ? "neg" : "");
+      var ganCls = c.gan < 0 ? "neg" : "";
+      var difCls = (c.dif === null) ? "zero" : (c.dif > 0 ? "pos" : (c.dif < 0 ? "neg" : "zero"));
+
+      html += '<tr' + (flag ? ' class="flag-' + flag + '"' : "") + '>' +
+        '<td class="code">' + esc(r.item) + '</td>' +
+        '<td class="nombre">' + esc(r.nombre) + (chip ? '<br>' + chip : "") + '</td>' +
+        '<td class="marca">' + esc(r.marca || "—") + '</td>' +
+        '<td class="num">' + NF0.format(r.stock) + '</td>' +
+        '<td class="num">' + money4(r.costo) + '</td>' +
+        '<td class="num">' + money(r.precio) + '</td>' +
+        '<td class="num calc">' + money(c.pdv) + '</td>' +
+        '<td class="num calc ' + ganCls + '">' + money(c.gan) + '</td>' +
+        '<td class="num calc ' + utilCls + '">' + (c.util === null ? "—" : NF2.format(c.util) + "%") + '</td>' +
+        '<td class="num comp"><input class="comp-input" type="number" step="0.01" inputmode="decimal" ' +
+          'aria-label="Costo competencia de ' + esc(r.nombre) + '" data-item="' + esc(r.item) + '" ' +
+          'value="' + (c.cc === null ? "" : c.cc) + '" placeholder="—"></td>' +
+        '<td class="num comp ' + difCls + '">' + (c.dif === null ? "—" : (c.dif > 0 ? "+" : "") + money(c.dif)) + '</td>' +
+      '</tr>';
+    }
+
+    if (!slice.length){
+      $("tbody").innerHTML = '<tr><td colspan="11"><div class="empty"><strong>Ningún producto coincide</strong>' +
+        'Probá con otra marca, otro texto de búsqueda o volvé a "Todos".</div></td></tr>';
+    } else {
+      $("tbody").innerHTML = html;
+    }
+
+    $("sheetCount").textContent = total === 0 ? "Sin resultados"
+      : ("Mostrando " + NF0.format(Math.min(shown, total)) + " de " + NF0.format(total) +
+         (total !== rows.length ? " (de " + NF0.format(rows.length) + " del archivo)" : ""));
+    $("more").hidden = (shown >= total);
+    $("more").textContent = "Mostrar " + NF0.format(Math.min(CHUNK, total - shown)) + " más";
+    $("sheetTitle").textContent = isDemo ? "Listado · datos de ejemplo" : "Listado · " + fileLabel;
+    renderStats(list);
+  }
+
+  function renderStats(list){
+    var n = rows.length, conStock = 0, alertas = 0, comparados = 0;
+    var sumGan = 0, sumPdv = 0, sumCosto = 0, ganables = 0, masCaros = 0;
+    for (var i = 0; i < rows.length; i++){
+      var r = rows[i], c = calc(r);
+      if (r.stock > 0) conStock++;
+      if (flagOf(r, c)) alertas++;
+      if (c.cc !== null){
+        comparados++;
+        if (c.dif < 0) masCaros++;
+      }
+      if (r.costo > 0 && r.precio > 0){
+        sumGan += c.gan; sumPdv += c.pdv; sumCosto += r.costo; ganables++;
+      }
+    }
+    var utilProm = sumPdv > 0 ? (sumGan / sumPdv) * 100 : null;
+
+    var tiles = [
+      {l:"Productos", v:NF0.format(n), s:(isDemo ? "datos de ejemplo" : fileLabel)},
+      {l:"Con stock", v:NF0.format(conStock), s:NF0.format(n - conStock) + " en cero"},
+      {l:"Utilidad promedio", v:(utilProm === null ? "—" : NF2.format(utilProm) + "%"),
+       s:"sobre el PDV con " + pctDesc() + "% desc · " + NF0.format(ganables) + " productos"},
+      {l:"Alertas", v:NF0.format(alertas), s:"costo, precio o margen", cls:alertas ? "is-crit" : ""},
+      {l:"Comparados", v:NF0.format(comparados), s:(comparados ? NF0.format(masCaros) + " por debajo de tu PDV" : "cargá un costo de competencia"), cls:"is-comp"}
+    ];
+    var html = "";
+    for (var j = 0; j < tiles.length; j++){
+      var t = tiles[j];
+      html += '<div class="stat ' + (t.cls || "") + '"><span class="stat-label">' + esc(t.l) + '</span>' +
+              '<span class="stat-value">' + esc(t.v) + '</span>' +
+              '<span class="stat-sub">' + esc(t.s) + '</span></div>';
+    }
+    $("stats").innerHTML = html;
+  }
+
+  function renderMarcas(){
+    var set = {};
+    for (var i = 0; i < rows.length; i++) if (rows[i].marca) set[rows[i].marca] = (set[rows[i].marca] || 0) + 1;
+    var keys = Object.keys(set).sort(function(a,b){ return a.localeCompare(b,"es"); });
+    var html = '<option value="">Todas las marcas (' + NF0.format(keys.length) + ')</option>';
+    for (var j = 0; j < keys.length; j++){
+      html += '<option value="' + esc(keys[j]) + '">' + esc(keys[j]) + ' (' + set[keys[j]] + ')</option>';
+    }
+    $("marca").innerHTML = html;
+  }
+
+  function renderAll(){ renderHead(); renderBody(); }
+
+  /* ============ lectura del Excel ============ */
+  var HEADERS = {
+    item:   ["item number","itemnumber","item","codigo de barras","upc","upc_code"],
+    nombre: ["nombre","descripcion","producto nombre","description"],
+    marca:  ["marca","brand"],
+    stock:  ["instock","in stock","stock","existencia","existencias"],
+    costo:  ["costo prom. nac.","costo prom nac","costo promedio nac","costo nac","costo"],
+    precio: ["precio base","precio","precio de venta","pdv"]
+  };
+  var FALLBACK = {item:1, nombre:3, marca:4, stock:6, costo:9, precio:10}; // B, D, E, G, J, K
+
+  function mapColumns(header){
+    var idx = {}, used = {};
+    var normHeader = header.map(norm);
+    Object.keys(HEADERS).forEach(function(key){
+      var found = -1;
+      for (var h = 0; h < HEADERS[key].length && found < 0; h++){
+        var target = norm(HEADERS[key][h]);
+        for (var i = 0; i < normHeader.length; i++){
+          if (used[i]) continue;
+          if (normHeader[i] === target){ found = i; break; }
+        }
+      }
+      if (found < 0) found = FALLBACK[key];
+      idx[key] = found;
+      used[found] = true;
+    });
+    return idx;
+  }
+
+  function loadWorkbook(data, name){
+    var wb = XLSX.read(data, {type:"array"});
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var grid = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null, blankrows:false});
+    if (!grid.length) throw new Error("La hoja está vacía.");
+    var idx = mapColumns(grid[0] || []);
+    var out = [];
+    for (var i = 1; i < grid.length; i++){
+      var g = grid[i];
+      if (!g) continue;
+      var item = g[idx.item];
+      var nombre = g[idx.nombre];
+      if ((item === null || item === undefined || item === "") && (nombre === null || nombre === undefined || nombre === "")) continue;
+      out.push({
+        item: String(item === null || item === undefined ? "" : item).trim(),
+        nombre: String(nombre === null || nombre === undefined ? "" : nombre).trim(),
+        marca: String(g[idx.marca] === null || g[idx.marca] === undefined ? "" : g[idx.marca]).trim(),
+        stock: numOf(g[idx.stock]),
+        costo: numOf(g[idx.costo]),
+        precio: numOf(g[idx.precio])
+      });
+    }
+    if (!out.length) throw new Error("No se encontraron filas de productos.");
+    rows = out;
+    isDemo = false;
+    fileLabel = name;
+    shown = CHUNK;
+    $("loader").classList.add("is-loaded");
+    $("loaderTitle").textContent = name;
+    $("loaderNote").textContent = NF0.format(rows.length) + " productos leídos · clic para cambiar de archivo";
+    renderMarcas();
+    renderAll();
+    toast(NF0.format(rows.length) + " productos cargados");
+  }
+
+  function readFile(file){
+    if (!file) return;
+    if (typeof XLSX === "undefined"){
+      toast("No se pudo cargar el lector de Excel. Recargá la página.");
+      return;
+    }
+    var fr = new FileReader();
+    fr.onload = function(e){
+      try { loadWorkbook(new Uint8Array(e.target.result), file.name); }
+      catch (err){ toast("No se pudo leer el archivo: " + (err && err.message ? err.message : "formato no reconocido")); }
+    };
+    fr.onerror = function(){ toast("No se pudo abrir el archivo."); };
+    fr.readAsArrayBuffer(file);
+  }
+
+  /* ============ sesión sin memoria ============ */
+  // Nada se guarda: los costos de competencia viven solo mientras la
+  // pestaña esté abierta. No hay almacenamiento en el navegador ni en la nube.
+  function setSync(state, text){
+    var dot = $("syncDot");
+    dot.className = "dot" + (state ? " " + state : "");
+    $("syncText").textContent = text;
+  }
+
+  function warnBeforeLeaving(e){
+    if (!Object.keys(comp).length) return;
+    e.preventDefault();
+    e.returnValue = "";
+    return "";
+  }
+
+  /* ============ exportación ============ */
+  function exportXlsx(){
+    if (typeof XLSX === "undefined"){ toast("El generador de Excel no está disponible."); return; }
+    var list = filtered();
+    if (!list.length){ toast("No hay filas para exportar."); return; }
+    var d = pctDesc();
+    var aoa = [[
+      "Item Number","Nombre","Marca","InStock","Costo Prom. Nac.","Precio Base",
+      "PDV con " + d + "% desc","Ganancia","% Utilidad",
+      "Costo competencia","Dif. competencia vs PDV"
+    ]];
+    for (var i = 0; i < list.length; i++){
+      var r = list[i].r, c = list[i].c;
+      aoa.push([
+        r.item, r.nombre, r.marca, r.stock,
+        round(r.costo, 4), round(r.precio, 2),
+        round(c.pdv, 2), round(c.gan, 2),
+        c.util === null ? "" : round(c.util, 2),
+        c.cc === null ? "" : round(c.cc, 2),
+        c.dif === null ? "" : round(c.dif, 2)
+      ]);
+    }
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = [{wch:16},{wch:42},{wch:20},{wch:9},{wch:16},{wch:12},{wch:16},{wch:11},{wch:18},{wch:17},{wch:20}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Costos Soldemi");
+    var fname = "costos-soldemi-" + new Date().toISOString().slice(0,10) + ".xlsx";
+    try {
+      XLSX.writeFile(wb, fname);
+      toast("Descargando " + fname);
+    } catch (err){
+      toast("No se pudo generar el archivo: " + (err && err.message ? err.message : "error desconocido"));
+    }
+  }
+  function round(v, n){
+    if (v === null || v === undefined || !isFinite(v)) return "";
+    var f = Math.pow(10, n);
+    return Math.round(v * f) / f;
+  }
+
+  /* ============ eventos ============ */
+  $("fileInput").addEventListener("change", function(e){
+    readFile(e.target.files && e.target.files[0]);
+    e.target.value = "";
+  });
+  ["dragenter","dragover"].forEach(function(ev){
+    document.addEventListener(ev, function(e){ e.preventDefault(); $("loader").classList.add("is-over"); });
+  });
+  ["dragleave","drop"].forEach(function(ev){
+    document.addEventListener(ev, function(e){
+      e.preventDefault();
+      if (ev === "dragleave" && e.relatedTarget) return;
+      $("loader").classList.remove("is-over");
+    });
+  });
+  document.addEventListener("drop", function(e){
+    e.preventDefault();
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) readFile(f);
+  });
+
+  $("q").addEventListener("input", function(){ shown = CHUNK; renderBody(); });
+  $("marca").addEventListener("change", function(){ shown = CHUNK; renderBody(); });
+  $("more").addEventListener("click", function(){ shown += CHUNK; renderBody(); });
+
+  function markPending(){
+    $("calcular").classList.toggle("is-pending", inputDesc() !== appliedDesc);
+  }
+  function calcular(){
+    appliedDesc = inputDesc();
+    $("desc").value = appliedDesc;
+    markPending();
+    shown = CHUNK;
+    renderAll();
+    toast("Recalculado con " + appliedDesc + "% de descuento · " + NF0.format(rows.length) + " productos");
+  }
+  $("calcular").addEventListener("click", calcular);
+  $("desc").addEventListener("input", markPending);
+  $("desc").addEventListener("keydown", function(e){ if (e.key === "Enter"){ e.preventDefault(); calcular(); } });
+
+  $("seg").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-view]");
+    if (!b) return;
+    view = b.getAttribute("data-view");
+    var all = this.querySelectorAll("button[data-view]");
+    for (var i = 0; i < all.length; i++) all[i].setAttribute("aria-pressed", all[i] === b ? "true" : "false");
+    shown = CHUNK;
+    renderBody();
+  });
+
+  $("headRow").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-sort]");
+    if (!b) return;
+    var k = b.getAttribute("data-sort");
+    if (sortKey === k) sortDir = -sortDir;
+    else { sortKey = k; sortDir = (k === "nombre" || k === "marca" || k === "item") ? 1 : -1; }
+    shown = CHUNK;
+    renderAll();
+  });
+
+  $("tbody").addEventListener("input", function(e){
+    var el = e.target;
+    if (!el.classList || !el.classList.contains("comp-input")) return;
+    var item = el.getAttribute("data-item");
+    var raw = el.value.trim();
+    if (raw === "") delete comp[item];
+    else {
+      var v = numOf(raw);
+      if (!isFinite(v)) return;
+      comp[item] = v;
+    }
+    // actualizar solo la celda de diferencia, sin volver a dibujar la tabla
+    var tr = el.closest("tr");
+    var cell = tr ? tr.lastElementChild : null;
+    var row = null;
+    for (var i = 0; i < rows.length; i++) if (rows[i].item === item){ row = rows[i]; break; }
+    if (cell && row){
+      var c = calc(row);
+      cell.className = "num comp " + (c.dif === null ? "zero" : (c.dif > 0 ? "pos" : (c.dif < 0 ? "neg" : "zero")));
+      cell.textContent = (c.dif === null ? "—" : (c.dif > 0 ? "+" : "") + money(c.dif));
+    }
+  });
+
+  $("clearComp").addEventListener("click", function(){
+    var n = Object.keys(comp).length;
+    if (!n){ toast("No hay costos de competencia cargados."); return; }
+    if (!confirm("¿Borrar los " + n + " costos de competencia cargados?")) return;
+    comp = {};
+    renderBody();
+    toast("Costos de competencia borrados.");
+  });
+
+  $("export").addEventListener("click", exportXlsx);
+  window.addEventListener("beforeunload", warnBeforeLeaving);
+
+  /* ============ arranque ============ */
+  comp = {};
+  rows = DEMO.slice();
+  renderMarcas();
+  renderAll();
+  setSync("off", "Nada se guarda: al cerrar la página se pierden los costos de competencia. Exportá a Excel para conservarlos.");
+})();
+</script>
+</body>
+</html>
