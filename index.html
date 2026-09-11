@@ -151,7 +151,7 @@
     letter-spacing:-.025em;line-height:1.05;text-wrap:balance;
   }
   .hero p{margin:0;color:var(--muted);font-size:15px;max-width:60ch}
-  .modules{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .modules{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,460px));gap:14px}
   .module{
     appearance:none;text-align:left;color:inherit;font:inherit;
     background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
@@ -362,7 +362,7 @@
 <script>
 "use strict";
 
-var APP_VERSION = "2026.09.11b";
+var APP_VERSION = "2026.09.11c";
 
 /* ---------------- Estado ----------------
    Todo vive en memoria. No se guarda NADA en localStorage —ni siquiera preferencias de vista—:
@@ -516,8 +516,6 @@ var ICONO_ARCHIVO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
   '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M9 13l6 5"></path><path d="M15 13l-6 5"></path></svg>';
 var ICONO_ETIQUETA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
   '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><circle cx="7" cy="7" r="1.2" fill="currentColor" stroke="none"></circle></svg>';
-var ICONO_CORTES = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
-  '<path d="M3 17l6-6 4 4 8-8"></path><path d="M14 7h7v7"></path></svg>';
 
 // La cabecera es la misma en todas las vistas; lo que cambia es lo que va a la derecha:
 // en la portada, el número de versión; en el módulo, la casilla de carga y el botón Calcular.
@@ -547,10 +545,7 @@ function renderMenu(){
   var mods = [
     {id:"modulo1", nombre:"Costeo y comparativo de precios",
       desc:"Inventario actual → PDV con descuento, utilidad por producto y diferencia contra el costo de la competencia.",
-      enabled:true, icono:ICONO_ETIQUETA, iconoCls:"", tag:"1 archivo", action:"Costear →"},
-    {id:"modulo2", nombre:"Variación entre dos cortes",
-      desc:"Compara dos exportaciones del inventario y enumera qué costos y qué precios se movieron entre una fecha y otra.",
-      enabled:false, icono:ICONO_CORTES, iconoCls:"comp", tag:"2 archivos", action:"Próximamente"}
+      enabled:true, icono:ICONO_ETIQUETA, iconoCls:"", tag:"1 archivo", action:"Costear →"}
   ];
   var tarjetas = mods.map(function(m){
     var abre = m.enabled ? '<button type="button" class="module" data-mod="'+m.id+'">' : '<div class="module off" aria-disabled="true">';
